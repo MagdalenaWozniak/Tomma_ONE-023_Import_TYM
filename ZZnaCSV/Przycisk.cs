@@ -1,0 +1,103 @@
+﻿using Hydra;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Diagnostics;
+
+[assembly: CallbackAssemblyDescription(Name: "ONE-023 Import TYM",
+                                           Description: "Excel -> Faktury TYM",
+                                           Author: "OneSupport",
+                                           Version: "1.0",
+                                           SystemVersion: "2022.0.2",
+                                           Created: "08-05-2023")]
+namespace Przycisk
+{
+    [SubscribeProcedure(Procedures.ListaRejestrVAT, "Excel->Faktury TYM")]
+    public class DodajFakture : Callback
+    {
+        private ClaWindow RapButton;
+        private ClaWindow zakladkaTabWewnetrzne;
+        private ClaWindow filtrBtn;
+        public override void Init()
+        {
+            AddSubscription(true, 0, Events.OpenWindow, new TakeEventDelegate(OnOpenWindow));
+            AddSubscription(false, 0, Events.ResizeWindow, new TakeEventDelegate(Resize));
+        }
+
+
+
+        private bool OnOpenWindow(Procedures ProcId, int ControlId, Events Event)
+        {
+
+            ClaWindow Parent = GetWindow();
+            Rectangle WndBnd = GetWindow().Bounds;
+            //zakladkaTabWewnetrzne = GetWindow().AllChildren["?TabFS"];
+            RapButton = GetWindow().Children.Add(ControlTypes.button);
+            RapButton.Visible = true;
+            RapButton.TextRaw = "TYM";
+            RapButton.ToolTipRaw = "Dodaj fakturę";
+            RapButton.OnAfterMouseDown += new TakeEventDelegate(BtnOnMouseDown);
+
+            filtrBtn = GetWindow().AllChildren["?BtnOCR"];                            //pobiera współrzędne przycisku zapisz
+            RapButton.Bounds = new Rectangle(filtrBtn.Bounds.X - 20, filtrBtn.Bounds.Y, 17, 15);
+            //listID = GetWindow().AllChildren["?Handlowe"].Id;      //tu sprawdzic
+
+            //pobrane z pola w zakładce Raporty
+            return true;
+        }
+
+        public bool Resize(Procedures ProcId, int ControlId, Events Event)
+        {
+            filtrBtn = GetWindow().AllChildren["?BtnOCR"];                            //pobiera współrzędne przycisku zapisz
+            RapButton.Bounds = new Rectangle(filtrBtn.Bounds.X-20, filtrBtn.Bounds.Y , 17, 15);
+            return true;
+        }
+
+        private bool BtnOnMouseDown(Procedures ProcId, int ControlId, Events Event)
+        {
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            //MessageBox.Show(Runtime.ConfigurationDictionary.Baza.ToString());
+
+            if (Runtime.ConfigurationDictionary.Baza.ToString().Substring(0, 16) == "ERPXL_Tomma_test")
+            {
+                //MessageBox.Show("Po wybraniu pliku nastąpi dodawanie danych do bazy ERPXL_TOMMA_test", "Komunikat",
+                // MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("C:\\OneSupport\\ImportTYM\\Test\\ImportTYM.exe");
+            }
+            else if (Runtime.ConfigurationDictionary.Baza.ToString().Substring(0, 15) == "ERPXL_TOMMA-ERP")
+            {
+                //MessageBox.Show("Po wybraniu pliku nastąpi dodawanie danych do bazy ERPXL_TOMMA-ERP", "Komunikat",
+                 //MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("C:\\OneSupport\\ImportTYM\\Produkcja\\ImportTYM.exe");
+            }
+            else if (Runtime.ConfigurationDictionary.Baza.ToString().Substring(0, 18) == "ERPXL_BONUS_2_test")
+            {
+                //MessageBox.Show("Po wybraniu pliku nastąpi dodawanie danych do bazy ERPXL_TOMMA-ERP", "Komunikat",
+                //MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("C:\\OneSupport\\ImportTYM\\Bonus_Test\\ImportTYM.exe");
+            }
+            else if (Runtime.ConfigurationDictionary.Baza.ToString().Substring(0, 13) == "ERPXL_BONUS_2")
+            {
+                // MessageBox.Show("Po wybraniu pliku nastąpi dodawanie danych do bazy ERPXL_TOMMA-ERP", "Komunikat",
+                // MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start("C:\\OneSupport\\ImportTYM\\Bonus_Produkcja\\ImportTYM.exe");
+            }
+            else
+            {
+                MessageBox.Show("Dla bazy " + Runtime.ConfigurationDictionary.Baza.ToString() + " dodatek nie posiada funkcjonalności", "Komunikat",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+
+            return true;
+        }
+        #region
+        public override void Cleanup()
+        {
+        }
+    }
+}
+
+#endregion
